@@ -1,15 +1,20 @@
 import { Router } from 'express';
 
-// import TransactionsRepository from '../repositories/TransactionsRepository';
-// import CreateTransactionService from '../services/CreateTransactionService';
+import TransactionsRepository from '../repositories/TransactionsRepository';
+import CreateTransactionService from '../services/CreateTransactionService';
+
+
 
 const transactionRouter = Router();
 
-// const transactionsRepository = new TransactionsRepository();
+const transactionsRepository = new TransactionsRepository();
 
 transactionRouter.get('/', (request, response) => {
   try {
-    // TODO
+    const transactions = transactionsRepository.all();
+    
+
+    return response.json(transactions);
   } catch (err) {
     return response.status(400).json({ error: err.message });
   }
@@ -17,7 +22,19 @@ transactionRouter.get('/', (request, response) => {
 
 transactionRouter.post('/', (request, response) => {
   try {
-    // TODO
+    const { title, type, value } = request.body;
+    if(type == 'outcome'){
+      const transactions = transactionsRepository.all();
+      if(transactions.balance.total < value){
+        return response.status(400).json({ error: "Você não possui este valor em caixa" });
+      }
+    }
+    const createTransaction = new CreateTransactionService(
+      transactionsRepository,
+    );
+
+    const transactionCreated = createTransaction.execute({title, type, value})
+    return response.json(transactionCreated);
   } catch (err) {
     return response.status(400).json({ error: err.message });
   }
